@@ -103,3 +103,22 @@ Headline figures on the full data: revenue INR 11,59,206 | 240 orders (204 non-c
 5. SQLite has no native date type, so dates are stored as ISO text, which sorts and filters correctly.
 6. Data checks on the supplied files: no missing values, no duplicate IDs, no orphan `Customer_ID`s,
    `Net_Amount_INR` = quantity x price x (1 - discount) for all non-cancelled rows.
+
+
+## Clear database script
+
+To remove all customer and order data while recreating the complete SQLite schema and view:
+
+```bash
+cd backend
+source .venv/bin/activate
+python scripts/clear_database.py
+```
+
+To reload the Excel data after clearing:
+
+```bash
+python scripts/load_data.py
+```
+
+The clear script does not modify source Excel files or application code. Set `SALES_DB` in `backend/.env` to clear a custom database path.

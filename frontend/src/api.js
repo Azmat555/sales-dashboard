@@ -1,10 +1,37 @@
 // Thin wrapper around the FastAPI endpoints.
 async function getJson(url, signal) {
-  const res = await fetch(url, { signal });
-  let body = null;
-  try { body = await res.json(); } catch { /* non-JSON error body */ }
-  if (!res.ok) throw new Error(body?.detail || `Request failed (${res.status})`);
-  return body;
+  let lastError = null;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (signal?.aborted) throw new DOMException("The request was aborted", "AbortError");
+
+    try {
+      const res = await fetch(url, {
+        signal,
+        cache: "no-store",
+        referrerPolicy: "same-origin",
+      });
+      let body = null;
+      try { body = await res.json(); } catch { /* non-JSON error body */ }
+
+      if (res.ok) return body;
+
+      if ([502, 503, 504].includes(res.status) && attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 150 * (attempt + 1)));
+        continue;
+      }
+
+      throw new Error(body?.detail || `Request failed (${res.status})`);
+    } catch (error) {
+      if (error.name === "AbortError") throw error;
+      lastError = error;
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 150 * (attempt + 1)));
+      }
+    }
+  }
+
+  throw lastError || new Error("Request failed");
 }
 
 export const fetchFilterOptions = (signal) => getJson("/api/filters", signal);
