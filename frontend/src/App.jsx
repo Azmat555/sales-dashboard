@@ -79,7 +79,7 @@ export default function App() {
         </header>
 
         <main className="min-w-0 p-2 sm:p-5 lg:p-7">
-          <div className="mx-auto min-w-0 max-w-700">
+          <div className="mx-auto min-w-0 max-w-400">
             <Routes>
               <Route path="/" element={<Navigate to="/home" replace />} />
               <Route path="/home" element={<HomeDashboard />} />
@@ -127,10 +127,7 @@ function HomeDashboard() {
           </section>
 
           <main className="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2">
-            <section className="min-w-0 rounded-[10px] border border-[#e3e8ef] bg-white p-3 md:col-span-2 md:p-4">
-              <h2 className="mb-3 text-sm font-semibold text-[#1b2430]">Monthly revenue trend</h2>
-              <LineChart id="c_month" rows={data.monthly} />
-            </section>
+           
 
             <section className="min-w-0 rounded-[10px] border border-[#e3e8ef] bg-white p-3 md:p-4">
               <h2 className="mb-3 text-sm font-semibold text-[#1b2430]">Revenue by product category</h2>
@@ -159,6 +156,11 @@ function HomeDashboard() {
             <section className="min-w-0 rounded-[10px] border border-[#e3e8ef] bg-white p-3 md:p-4">
               <h2 className="mb-3 text-sm font-semibold text-[#1b2430]">Top 5 products by revenue</h2>
               <BarList id="c_top" rows={data.top_products} />
+            </section>
+
+             <section className="min-w-0 rounded-[10px] border border-[#e3e8ef] bg-white p-3 md:col-span-2 md:p-4">
+              <h2 className="mb-3 text-sm font-semibold text-[#1b2430]">Monthly revenue trend</h2>
+              <LineChart id="c_month" rows={data.monthly} />
             </section>
           </main>
         </>
