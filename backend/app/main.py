@@ -1,11 +1,15 @@
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 from app import db
 
 app = FastAPI(title="Sales Dashboard API")
+
+
+class OrderStatusUpdate(BaseModel):
+    status: str
 
 
 @app.get("/api/filters")
@@ -37,6 +41,45 @@ def dashboard(
         raise HTTPException(status_code=400, detail=str(exc))
 
 
+@app.get("/api/customers")
+def customers(search: Optional[str] = None):
+    """Complete customer list with lifetime order summary."""
+    return db.get_customers(search=search)
+
+
+@app.get("/api/customers/{customer_id}")
+def customer_detail(customer_id: str):
+    """Full customer information and complete order history."""
+    result = db.get_customer(customer_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return result
+
+
+@app.get("/api/orders")
+def orders(
+    search: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 500,
+):
+    """All or filtered recent orders for admin management."""
+    if status and status not in ("Completed", "Returned", "Cancelled"):
+        raise HTTPException(status_code=400, detail="Invalid order status")
+    return db.get_orders(search=search, status=status, limit=limit)
+
+
+@app.patch("/api/orders/{order_id}/status")
+def update_order_status(order_id: str, payload: OrderStatusUpdate):
+    """Manage an order status."""
+    try:
+        result = db.update_order_status(order_id, payload.status)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if result is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return result
+
+
 @app.get("/")
 def startingMark():
-    return {"Welcome to Sales Dashboard api running......"}
+    return {"Welcome to Sales Dashboard API running......"}
